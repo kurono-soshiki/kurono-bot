@@ -1,0 +1,2 @@
+# kurono-bot
+github organisationのためのbot
