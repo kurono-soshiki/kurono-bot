@@ -35,7 +35,6 @@ docker-compose up --build
 
 - `src/main.py` - Main bot entry point
 - `src/config.py` - Configuration loading from environment variables
-- `src/ytdl_wrapper.py` - YouTube audio downloading utility
 - `pyproject.toml` - Poetry project configuration and dependencies
 - `Dockerfile` - Container build configuration  
 - `docker-compose.yaml` - Multi-service deployment with VoiceVox
