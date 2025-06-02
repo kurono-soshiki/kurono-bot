@@ -13,6 +13,10 @@ tree = discord.app_commands.CommandTree(client)
 # yomiage_bot.setup(tree, client)
 # umigame_bot.setup(tree, client)
 
+# Repository channel management
+from repo_channels import setup as repo_channels_setup
+repo_channels_setup(tree, client)
+
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
