@@ -1,0 +1,109 @@
+{
+  "issue_opened": {
+    "action": "opened",
+    "issue": {
+      "number": 1,
+      "title": "テストIssue",
+      "body": "これはテスト用のIssueです。Comment Connectorの動作確認を行います。",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/issues/1",
+      "user": {
+        "login": "test_user"
+      },
+      "state": "open",
+      "created_at": "2025-01-01T00:00:00Z"
+    },
+    "repository": {
+      "name": "test-repo",
+      "full_name": "kurono-soshiki/test-repo",
+      "html_url": "https://github.com/kurono-soshiki/test-repo"
+    }
+  },
+  "issue_comment_created": {
+    "action": "created",
+    "comment": {
+      "body": "これはテストコメントです。",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/issues/1#issuecomment-123456",
+      "user": {
+        "login": "commenter_user"
+      },
+      "created_at": "2025-01-01T01:00:00Z"
+    },
+    "issue": {
+      "number": 1,
+      "title": "テストIssue",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/issues/1",
+      "user": {
+        "login": "test_user"
+      }
+    },
+    "repository": {
+      "name": "test-repo",
+      "full_name": "kurono-soshiki/test-repo"
+    }
+  },
+  "pull_request_opened": {
+    "action": "opened",
+    "pull_request": {
+      "number": 2,
+      "title": "テストPull Request",
+      "body": "これはテスト用のPull Requestです。",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/pull/2",
+      "user": {
+        "login": "pr_author"
+      },
+      "base": {
+        "ref": "main"
+      },
+      "head": {
+        "ref": "feature-branch"
+      },
+      "merged": false,
+      "state": "open",
+      "created_at": "2025-01-01T02:00:00Z"
+    },
+    "repository": {
+      "name": "test-repo",
+      "full_name": "kurono-soshiki/test-repo"
+    }
+  },
+  "pull_request_review": {
+    "action": "submitted",
+    "review": {
+      "body": "LGTMです！良い変更だと思います。",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/pull/2#pullrequestreview-789",
+      "state": "approved",
+      "user": {
+        "login": "reviewer_user"
+      },
+      "submitted_at": "2025-01-01T03:00:00Z"
+    },
+    "pull_request": {
+      "number": 2,
+      "title": "テストPull Request",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/pull/2",
+      "user": {
+        "login": "pr_author"
+      }
+    },
+    "repository": {
+      "name": "test-repo"
+    }
+  },
+  "pull_request_closed": {
+    "action": "closed",
+    "pull_request": {
+      "number": 2,
+      "title": "テストPull Request",
+      "html_url": "https://github.com/kurono-soshiki/test-repo/pull/2",
+      "user": {
+        "login": "pr_author"
+      },
+      "merged": true,
+      "merge_commit_sha": "abc123def456",
+      "closed_at": "2025-01-01T04:00:00Z"
+    },
+    "repository": {
+      "name": "test-repo"
+    }
+  }
+}
