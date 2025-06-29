@@ -11,7 +11,7 @@ tree = discord.app_commands.CommandTree(client)
 # from yomiage import yomiage as yomiage_bot
 # from umigame import umigame as umigame_bot
 from src.sync_channel import sync_channel
-from comment_connecter import comment_connecter
+from src.comment_connecter import comment_connecter
 # yomiage_bot.setup(tree, client)
 # umigame_bot.setup(tree, client)
 

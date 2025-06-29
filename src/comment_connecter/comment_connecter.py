@@ -46,21 +46,35 @@ class CommentConnector:
         try:
             payload = await request.json()
             event_type = request.headers.get('X-GitHub-Event')
+            delivery_id = request.headers.get('X-GitHub-Delivery', 'unknown')
+            
+            # リポジトリ情報を取得（存在する場合）
+            repo_name = payload.get('repository', {}).get('name', 'unknown')
+            
+            logger.info(f"Received webhook: event={event_type}, repo={repo_name}, delivery={delivery_id}")
             
             if event_type == 'issues':
+                logger.info(f"Processing issue event: {payload['action']} for {repo_name}#{payload['issue']['number']}")
                 await self.handle_issue_event(payload)
             elif event_type == 'issue_comment':
+                logger.info(f"Processing issue comment event: {payload['action']} for {repo_name}#{payload['issue']['number']}")
                 await self.handle_issue_comment_event(payload)
             elif event_type == 'pull_request':
+                logger.info(f"Processing pull request event: {payload['action']} for {repo_name}#{payload['pull_request']['number']}")
                 await self.handle_pull_request_event(payload)
             elif event_type == 'pull_request_review':
+                logger.info(f"Processing pull request review event: {payload['action']} for {repo_name}#{payload['pull_request']['number']}")
                 await self.handle_pull_request_review_event(payload)
             elif event_type == 'pull_request_review_comment':
+                logger.info(f"Processing pull request review comment event: {payload['action']} for {repo_name}#{payload['pull_request']['number']}")
                 await self.handle_pull_request_review_comment_event(payload)
+            else:
+                logger.info(f"Unhandled webhook event type: {event_type} for repo {repo_name}")
                 
+            logger.info(f"Successfully processed webhook: event={event_type}, repo={repo_name}, delivery={delivery_id}")
             return web.Response(text='OK')
         except Exception as e:
-            logger.error(f"Error handling webhook: {e}")
+            logger.error(f"Error handling webhook (delivery={delivery_id}): {e}", exc_info=True)
             return web.Response(text='Error', status=500)
     
     async def handle_issue_event(self, payload):
@@ -117,13 +131,19 @@ class CommentConnector:
     
     async def notify_issue_created(self, issue, repository):
         """Issue作成通知"""
-        channel_id = self.channel_mappings.get(repository['name'])
+        repo_name = repository['name']
+        issue_number = issue['number']
+        
+        logger.info(f"Notifying issue created: {repo_name}#{issue_number}")
+        
+        channel_id = self.channel_mappings.get(repo_name)
         if not channel_id:
-            logger.info(f"No channel mapping found for repository: {repository['name']}")
+            logger.info(f"No channel mapping found for repository: {repo_name}")
             return
             
         channel = self.client.get_channel(channel_id)
         if not channel:
+            logger.warning(f"Channel not found for ID: {channel_id} (repo: {repo_name})")
             return
             
         embed = discord.Embed(
@@ -148,14 +168,23 @@ class CommentConnector:
         self.thread_mappings[issue['html_url']] = thread.id
         self.storage.set_thread_mapping(issue['html_url'], thread.id)
         
+        logger.info(f"Created thread for issue {repo_name}#{issue_number}: {thread.id}")
+        
     async def notify_issue_comment(self, comment, issue, repository):
         """Issue コメント通知"""
+        repo_name = repository['name']
+        issue_number = issue['number']
+        
+        logger.info(f"Notifying issue comment: {repo_name}#{issue_number}")
+        
         thread_id = self.thread_mappings.get(issue['html_url'])
         if not thread_id:
+            logger.info(f"No thread found for issue: {issue['html_url']}")
             return
             
         thread = self.client.get_channel(thread_id)
         if not thread:
+            logger.warning(f"Thread not found for ID: {thread_id} (issue: {repo_name}#{issue_number})")
             return
             
         embed = discord.Embed(
@@ -167,16 +196,23 @@ class CommentConnector:
         embed.add_field(name="Author", value=self.convert_github_mention(comment['user']['login']), inline=True)
         
         await thread.send(embed=embed)
+        logger.info(f"Sent comment notification to thread {thread_id} for {repo_name}#{issue_number}")
         
     async def notify_pull_request_created(self, pull_request, repository):
         """Pull Request作成通知"""
-        channel_id = self.channel_mappings.get(repository['name'])
+        repo_name = repository['name']
+        pr_number = pull_request['number']
+        
+        logger.info(f"Notifying pull request created: {repo_name}#{pr_number}")
+        
+        channel_id = self.channel_mappings.get(repo_name)
         if not channel_id:
-            logger.info(f"No channel mapping found for repository: {repository['name']}")
+            logger.info(f"No channel mapping found for repository: {repo_name}")
             return
             
         channel = self.client.get_channel(channel_id)
         if not channel:
+            logger.warning(f"Channel not found for ID: {channel_id} (repo: {repo_name})")
             return
             
         embed = discord.Embed(
@@ -202,6 +238,8 @@ class CommentConnector:
         # 永続化
         self.thread_mappings[pull_request['html_url']] = thread.id
         self.storage.set_thread_mapping(pull_request['html_url'], thread.id)
+        
+        logger.info(f"Created thread for pull request {repo_name}#{pr_number}: {thread.id}")
         
     async def notify_pull_request_closed(self, pull_request, repository):
         """Pull Request終了通知"""
@@ -338,6 +376,7 @@ class CommentConnector:
             comment_body = f"*From Discord user: {message.author.display_name}*\n\n{comment_body}"
             
             # GitHubにコメント投稿
+            logger.info(f"Attempting to post Discord comment to GitHub: {repo_name}#{issue_number}")
             success = await self.post_github_comment(repo_name, issue_number, comment_body)
             
             if success:

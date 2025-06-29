@@ -41,7 +41,7 @@ services:
 
 - Payload URL: `http://<サーバのIPまたはドメイン>:8000/webhook/github`
 - Content type: `application/json`
-- Events: Issues, Issue comments, Pull requests, Pull request reviews, Pull request review comments
+- Events: Send me everything
 
 ## Modules
 
@@ -55,6 +55,36 @@ GitHubのorganizationリポジトリとDiscordチャンネルを同期するモ�
 - 定期実行スクリプト
 
 **詳細:** [src/synk_channel/README.md](src/synk_channel/README.md)
+
+### comment_connecter
+GitHubのissue/PRとDiscordチャンネルのコメントを双方向同期するモジュール
+
+**機能:**
+- GitHub webhook受信とDiscord通知
+- Discord→GitHubへのコメント投稿
+- ユーザー・チャンネルの紐づけ管理
+- 自動スレッド作成
+
+## Discord コマンド
+
+### Repository Sync Commands
+- `/sync-repos` - GitHubリポジトリとDiscordチャンネルを手動同期（管理者のみ）
+- `/list-repos` - Organization内のリポジトリ一覧を表示
+
+### Comment Connector Commands
+- `/link_user <github_username> [discord_user]` - GitHubユーザーとDiscordユーザーを紐づけ
+- `/link_channel <repo_name> [channel]` - GitHubリポジトリとDiscordチャンネルを紐づけ
+- `/auto_link` - チャンネル名とリポジトリ名に基づいて自動で紐づけ
+- `/connector_status` - Comment Connectorの設定状況を確認
+- `/unlink_user <github_username>` - GitHubユーザーとDiscordユーザーの紐づけを解除
+- `/unlink_channel <repo_name>` - GitHubリポジトリとDiscordチャンネルの紐づけを解除
+
+### 使用方法
+1. `/sync-repos` でDiscordチャンネルを作成
+2. `/auto_link` でチャンネルとリポジトリを一括紐づけ
+3. GitHubのorganization設定でwebhookを設定
+4. GitHub上のissue/PRの作成・コメントがDiscordに自動通知される
+5. Discordスレッド内でbotをメンション(@bot)してコメントすると、GitHubにコメントが投稿される
 
 ## Project Structure
 
