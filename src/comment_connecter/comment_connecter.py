@@ -35,9 +35,9 @@ class CommentConnector:
         
         runner = web.AppRunner(app)
         await runner.setup()
-        site = web.TCPSite(runner, 'localhost', port)
+        site = web.TCPSite(runner, config.WEBHOOK_HOST, port)
         await site.start()
-        logger.info(f"WebHook server started on port {port}")
+        logger.info(f"WebHook server started on {config.WEBHOOK_HOST}:{port}")
         
     async def handle_github_webhook(self, request):
         """GitHub WebHookのイベントを処理"""
@@ -119,6 +119,7 @@ class CommentConnector:
         """Issue作成通知"""
         channel_id = self.channel_mappings.get(repository['name'])
         if not channel_id:
+            logger.info(f"No channel mapping found for repository: {repository['name']}")
             return
             
         channel = self.client.get_channel(channel_id)
@@ -171,6 +172,7 @@ class CommentConnector:
         """Pull Request作成通知"""
         channel_id = self.channel_mappings.get(repository['name'])
         if not channel_id:
+            logger.info(f"No channel mapping found for repository: {repository['name']}")
             return
             
         channel = self.client.get_channel(channel_id)
@@ -403,6 +405,40 @@ async def setup(tree: discord.app_commands.CommandTree, client: discord.Client):
         embed.add_field(name="GitHub接続", value=github_status, inline=True)
         
         await interaction.response.send_message(embed=embed)
+    
+    # 自動チャンネル紐づけコマンド
+    @tree.command(name="auto_link", description="チャンネル名とリポジトリ名に基づいて自動で紐づけ")
+    async def auto_link(interaction: discord.Interaction):
+        if not interaction.guild:
+            await interaction.response.send_message("❌ このコマンドはサーバー内でのみ使用できます")
+            return
+        
+        # カテゴリ内のチャンネルを取得
+        category = interaction.guild.get_channel(config.DISCORD_CATEGORY_ID)
+        if not category:
+            await interaction.response.send_message("❌ 指定されたカテゴリが見つかりません")
+            return
+        
+        linked_count = 0
+        for channel in category.channels:
+            if isinstance(channel, discord.TextChannel):
+                # チャンネル名をリポジトリ名として使用
+                repo_name = channel.name
+                comment_connector.channel_mappings[repo_name] = channel.id
+                comment_connector.storage.set_channel_mapping(repo_name, channel.id)
+                linked_count += 1
+        
+        await interaction.response.send_message(f"✅ {linked_count}個のチャンネルを自動で紐づけました")
+    
+    # チャンネル紐づけ解除コマンド
+    @tree.command(name="unlink_channel", description="GitHubリポジトリとDiscordチャンネルの紐づけを解除")
+    async def unlink_channel(interaction: discord.Interaction, repo_name: str):
+        if repo_name in comment_connector.channel_mappings:
+            del comment_connector.channel_mappings[repo_name]
+            comment_connector.storage.save_data()
+            await interaction.response.send_message(f"✅ リポジトリ `{repo_name}` の紐づけを解除しました")
+        else:
+            await interaction.response.send_message(f"❌ リポジトリ `{repo_name}` は紐づけされていません")
     
     # ユーザー紐づけ解除コマンド
     @tree.command(name="unlink_user", description="GitHubユーザーとDiscordユーザーの紐づけを解除")
