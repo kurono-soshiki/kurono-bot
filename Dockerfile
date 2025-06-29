@@ -19,7 +19,7 @@ RUN poetry config virtualenvs.create false \
 COPY src/ /app/src/
 
 # PYTHONPATHを追加
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app
 
 # Run the application
 CMD ["python3", "src/main.py"]

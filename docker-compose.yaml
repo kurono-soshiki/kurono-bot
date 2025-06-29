@@ -1,15 +1,10 @@
 services:
   bot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
     container_name: kurono-bot
     restart: always
-    volumes:
-      - .:/app
-    depends_on:
-      - voicebox
-
-  voicebox:
-    image: voicevox/voicevox_engine:cpu-latest
-    container_name: voicebox
     ports:
-      - "50021:50021"
+      - "8035:8000" 
